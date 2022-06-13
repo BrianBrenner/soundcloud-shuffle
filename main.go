@@ -1,15 +1,30 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"regexp"
 )
 
-func likesHandler(res http.ResponseWriter, req *http.Request) {
-	res.WriteHeader(http.StatusOK)
+var likesRoute = regexp.MustCompile(`/api/users/(\d+$)`)
+
+func route(w http.ResponseWriter, r *http.Request) {
+	switch {
+	case likesRoute.MatchString(r.URL.Path):
+		likesHandler(w, r)
+	default:
+		w.Write([]byte("Route not found\n"))
+	}
+}
+
+func likesHandler(w http.ResponseWriter, r *http.Request) {
+	id := likesRoute.FindStringSubmatch(r.URL.Path)
+
+	fmt.Fprint(w, id[1])
 }
 
 func main() {
-	http.HandleFunc("/api/users/", likesHandler)
+	http.HandleFunc("/", route)
 
 	err := http.ListenAndServe("localhost:8080", nil)
 	if err != nil {
