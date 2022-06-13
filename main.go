@@ -18,11 +18,11 @@ func route(w http.ResponseWriter, r *http.Request) {
 }
 
 func likesHandler(w http.ResponseWriter, r *http.Request) {
-	id := likesRoute.FindStringSubmatch(r.URL.Path)
+	userId := likesRoute.FindStringSubmatch(r.URL.Path)
 
-	url := getClientId()
-	fmt.Fprint(w, url)
-	fmt.Fprint(w, id[1])
+	clientId := getClientId()
+	likes := getUserLikes(userId[1], clientId)
+	fmt.Fprint(w, likes)
 }
 
 func main() {

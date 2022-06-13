@@ -34,13 +34,17 @@ func getClientId() string {
 	idRes, _ := http.Get(url)
 	idBody, _ := ioutil.ReadAll(idRes.Body)
 
-	// handle empty matches
+	// TODO: handle empty matches
 	idRegex := regexp.MustCompile(`,client_id:"(.*?)"`)
 	idVal := idRegex.FindStringSubmatch(string(idBody))
 
 	return idVal[1]
 }
 
-// func getUserLikes(userId, clientId) {
+func getUserLikes(userId string, clientId string) string {
+	// TODO: parse as JSON, also follow next urls
+	res, _ := http.Get("https://api-v2.soundcloud.com/users/" + userId + "/likes?client_id=" + clientId + "&limit=1")
 
-// }
+	body, _ := ioutil.ReadAll(res.Body)
+	return string(body)
+}
