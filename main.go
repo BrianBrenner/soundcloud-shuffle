@@ -20,8 +20,9 @@ func route(w http.ResponseWriter, r *http.Request) {
 func likesHandler(w http.ResponseWriter, r *http.Request) {
 	userId := likesRoute.FindStringSubmatch(r.URL.Path)
 
-	clientId := getClientId()
-	likes := getUserLikes(userId[1], clientId)
+	// TODO: handle errs
+	clientId, _ := getClientId()
+	likes, _ := getUserLikes(userId[1], clientId)
 	fmt.Fprint(w, likes)
 }
 
