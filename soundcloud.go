@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -24,13 +25,40 @@ type User struct {
 	ID int `json:"id"`
 }
 
-// TODO: handle errors like 401, 404, etc, do you have to check response code? or is non-200 auto error
-
 var client = &http.Client{Timeout: 15 * time.Second}
+
+// TODO: handle errors like 401, 404, etc, do you have to check response code? or is non-200 auto error
+// https://stackoverflow.com/questions/55210301/error-handling-with-http-newrequest-in-go
+func getRequest(url string) (resp *http.Response, err error) {
+	return client.Get(url)
+}
+
+func likesRequest(url string) ([]string, string, error) {
+	res, err := getRequest(url)
+	if err != nil {
+		return nil, "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, "", err
+	}
+
+	var likes = new(Likes)
+	err = json.Unmarshal(body, &likes)
+
+	urls := []string{}
+	for _, track := range likes.Collection {
+		urls = append(urls, track.Track.URL)
+	}
+
+	return urls, likes.NextHref, nil
+}
 
 // The HTML returned from soundcloud has a lot of script tags. If you follow
 // the URL in the last tag you get some javacript back which contains a client ID
-func getClientIdUrl(res *http.Response) (string, error) {
+func parseForUrl(res *http.Response) (string, error) {
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return "", err
@@ -48,18 +76,18 @@ func getClientIdUrl(res *http.Response) (string, error) {
 }
 
 func getClientId() (string, error) {
-	res, err := client.Get("https://soundcloud.com/")
+	res, err := getRequest("https://soundcloud.com/")
 	if err != nil {
 		return "", err
 	}
 	defer res.Body.Close()
 
-	url, err := getClientIdUrl(res)
+	url, err := parseForUrl(res)
 	if err != nil {
 		return "", err
 	}
 
-	idRes, err := client.Get(url)
+	idRes, err := getRequest(url)
 	if err != nil {
 		return "", err
 	}
@@ -83,7 +111,7 @@ func getUserId(profileUrl string, clientId string) (string, error) {
 		"url":       []string{profileUrl},
 	}
 
-	res, err := client.Get("https://api-v2.soundcloud.com/resolve?" + params.Encode())
+	res, err := getRequest("https://api-v2.soundcloud.com/resolve?" + params.Encode())
 	if err != nil {
 		return "", err
 	}
@@ -105,36 +133,36 @@ func getUserId(profileUrl string, clientId string) (string, error) {
 
 func getUserLikes(userId string, clientId string) ([]string, error) {
 	params := url.Values{
-		"limit":     []string{"1"},
+		// this seems to have no limit, but don't want soundcloud to block me or anything
+		// 200 is the limit on apiv1
+		"limit":     []string{"200"},
 		"client_id": []string{clientId},
 	}
 
-	// TODO: also follow next urls
-	res, err := client.Get("https://api-v2.soundcloud.com/users/" + userId + "/likes?" + params.Encode())
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
+	// The soundcloud API returns paginated requests by adding a next_href property to the response. We follow
+	// this till it becomes nil, meaning we've reached the end of the pagination
+	finalUrls, nextUrl, err := likesRequest("https://api-v2.soundcloud.com/users/" + userId + "/likes?" + params.Encode())
 	if err != nil {
 		return nil, err
 	}
 
-	var likes = new(Likes)
-	err = json.Unmarshal(body, &likes)
+	for nextUrl != "" {
+		urls, localNextUrl, err := likesRequest(nextUrl + "&client_id=" + clientId)
+		if err != nil {
+			return nil, err
+		}
 
-	urls := []string{}
-	for _, track := range likes.Collection {
-		urls = append(urls, track.Track.URL)
+		finalUrls = append(finalUrls, urls...)
+		nextUrl = localNextUrl
 	}
 
-	shuffled := make([]string, len(urls))
+	shuffled := make([]string, len(finalUrls))
 	rand.Seed(time.Now().UTC().UnixNano())
-	perm := rand.Perm(len(urls))
+	perm := rand.Perm(len(finalUrls))
 
+	fmt.Println(len(finalUrls))
 	for i, v := range perm {
-		shuffled[v] = urls[i]
+		shuffled[v] = finalUrls[i]
 	}
 
 	return shuffled, nil
