@@ -6,6 +6,8 @@ import (
 	"regexp"
 )
 
+// TODO: store clientId, before doing anything check if valid, if not then fetch one
+
 var likesRoute = regexp.MustCompile(`/api/likes$`)
 
 func route(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +57,7 @@ func likesHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/", route)
 
-	err := http.ListenAndServe("localhost:8080", nil)
+	err := http.ListenAndServe("localhost:3000", nil)
 	if err != nil {
 		panic(err)
 	}
