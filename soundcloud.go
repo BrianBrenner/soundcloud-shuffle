@@ -3,8 +3,11 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -17,7 +20,11 @@ type Likes struct {
 	NextHref string `json:"next_href"`
 }
 
-// TODO: handle errors like 401, 404, etc
+type User struct {
+	ID int `json:"id"`
+}
+
+// TODO: handle errors like 401, 404, etc, do you have to check response code? or is non-200 auto error
 
 var client = &http.Client{Timeout: 15 * time.Second}
 
@@ -70,9 +77,40 @@ func getClientId() (string, error) {
 	return idVal[1], nil
 }
 
+func getUserId(profileUrl string, clientId string) (string, error) {
+	params := url.Values{
+		"client_id": []string{clientId},
+		"url":       []string{profileUrl},
+	}
+
+	res, err := client.Get("https://api-v2.soundcloud.com/resolve?" + params.Encode())
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var user = new(User)
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		return "", err
+	}
+
+	return strconv.Itoa(user.ID), nil
+}
+
 func getUserLikes(userId string, clientId string) ([]string, error) {
-	// TODO: parse as JSON, also follow next urls
-	res, err := client.Get("https://api-v2.soundcloud.com/users/" + userId + "/likes?client_id=" + clientId + "&limit=1")
+	params := url.Values{
+		"limit":     []string{"1"},
+		"client_id": []string{clientId},
+	}
+
+	// TODO: also follow next urls
+	res, err := client.Get("https://api-v2.soundcloud.com/users/" + userId + "/likes?" + params.Encode())
 	if err != nil {
 		return nil, err
 	}
@@ -91,5 +129,13 @@ func getUserLikes(userId string, clientId string) ([]string, error) {
 		urls = append(urls, track.Track.URL)
 	}
 
-	return urls, nil
+	shuffled := make([]string, len(urls))
+	rand.Seed(time.Now().UTC().UnixNano())
+	perm := rand.Perm(len(urls))
+
+	for i, v := range perm {
+		shuffled[v] = urls[i]
+	}
+
+	return shuffled, nil
 }
