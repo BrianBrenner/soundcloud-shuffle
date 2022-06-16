@@ -1,16 +1,16 @@
 <template>
   <v-app>
     <v-main>
-      <Main/>
+      <MainPage/>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import Main from './components/Main';
+import MainPage from './components/MainPage';
 
 export default {
   name: 'App',
-  components: { Main },
+  components: { MainPage },
 };
 </script>

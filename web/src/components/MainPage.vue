@@ -12,7 +12,7 @@
           />
         </div>
         <div v-else width="80%">
-          <player 
+          <soundcloud-player 
             :url="songUrl"
             @next="handleNextSong"
             @previous="handlePreviousSong"
@@ -24,12 +24,12 @@
 </template>
 
 <script>
-import Player from './Player';
+import SoundcloudPlayer from './SoundcloudPlayer';
 
 export default {
-  name: 'Main',
+  name: 'MainPage',
   components: {
-    Player,
+    SoundcloudPlayer,
   },
   data() {
     return {

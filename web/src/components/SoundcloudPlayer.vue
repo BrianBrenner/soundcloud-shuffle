@@ -21,7 +21,7 @@
 import Widget from 'soundcloud-widget';
 
 export default {
-  name: 'Player',
+  name: 'SoundcloudPlayer',
   props: {
     url: {
       type: String,
