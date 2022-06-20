@@ -11,7 +11,7 @@ import (
 
 var likesRoute = regexp.MustCompile(`/api/likes$`)
 
-func route(w http.ResponseWriter, r *http.Request) {
+func router(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case likesRoute.MatchString(r.URL.Path):
 		likesHandler(w, r)
@@ -64,7 +64,10 @@ func likesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", route)
+	fs := http.FileServer(http.Dir("./web/dist"))
+
+	http.Handle("/api/", http.HandlerFunc(router))
+	http.Handle("/", fs)
 
 	err := http.ListenAndServe("localhost:3000", nil)
 	if err != nil {
