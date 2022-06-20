@@ -4,7 +4,7 @@
       class="d-flex justify-center"
     >
       <div style="width: 75%">
-        <div v-if="!isLoaded" class="d-flex justify-center">
+        <div v-if="isLoading" class="d-flex justify-center">
           <v-progress-circular
             indeterminate
             color="rgb(204, 68, 0)"
@@ -33,53 +33,43 @@ export default {
   },
   data() {
     return {
-      // clientId: '95f22ed54a5c297b1c41f72d713623ef',
-      clientId: 'cyfcuTc4OKTJ09j8IoqWUZQkZ7QFN3p8',
       currentIndex: 0,
       currentSong: null,
-      isLoaded: false,
+      isLoading: true,
       likes: [],
-      shuffledLikes: [],
     };
   },
-  async mounted() {
-    // try {
-    //   await this.getFavorites('/users/57886071/likes', {
-    //     limit: 200,
-    //     linked_partitioning: true,
-    //   });
-
-
-    // } catch (error) {
-    //   console.log(error);
-    // }
-
-
-    // this.isLoaded = true;
+  mounted() {
+    this.getLikes();
   },
   methods: {
     handleNextSong() {
       this.currentIndex += 1;
-      this.currentSong = this.shuffledLikes[this.currentIndex];
+      this.currentSong = this.likes[this.currentIndex];
     },
     handlePreviousSong() {
       this.currentIndex -= 1;
-      this.currentSong = this.shuffledLikes[this.currentIndex];
+      this.currentSong = this.likes[this.currentIndex];
     },
-    shuffleArray(array) {
-      const copy = array.slice();
+    async getLikes() {
+      try {
+        this.isLoading = true;
+        const res = await fetch('api/likes?' + new URLSearchParams({ url: 'https://soundcloud.com/brian-brenner-4' })) 
+        this.likes = await res.json()
 
-      for (let i = copy.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [copy[i], copy[j]] = [copy[j], copy[i]];
+        this.currentIndex = 0
+        this.currentSong = this.likes[this.currentIndex]
+      } catch (error) {
+        // TODO: handle errors
+        console.log(error)
+      } finally {
+        this.isLoading = false;
       }
-      
-      return copy;
     },
   },
   computed: {
     songUrl() {
-      return `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com${this.currentSong}`
+      return `https://w.soundcloud.com/player/?url=${this.currentSong}`
     }
   }
 }
