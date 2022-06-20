@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -51,7 +52,14 @@ func likesHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Something went wrong\n"))
 	}
 
-	fmt.Fprint(w, likes)
+	jsonLikes, err := json.Marshal(likes)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Something went wrong\n"))
+	}
+
+	w.Write(jsonLikes)
 }
 
 func main() {
