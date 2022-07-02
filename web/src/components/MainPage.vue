@@ -41,6 +41,7 @@
             <v-btn
               color="primary"
               class="text-capitalize white--text xs3"
+              type="submit"
             >
               Shuffle Songs
             </v-btn>
