@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 )
 
@@ -16,47 +16,55 @@ func router(w http.ResponseWriter, r *http.Request) {
 	case likesRoute.MatchString(r.URL.Path):
 		likesHandler(w, r)
 	default:
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Route not found\n"))
+		JSONError(w, ErrNotFound)
 	}
 }
 
-func likesHandler(w http.ResponseWriter, r *http.Request) {
+func validateParams(r *http.Request) (string, error) {
 	profileUrl, ok := r.URL.Query()["url"]
 
 	if !ok || len(profileUrl[0]) < 1 {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		w.Write([]byte("Invalid params passed. A soundcloud profile url must bed passed as the url query param\n"))
+		return "", &APIError{status: http.StatusBadRequest, message: "Invalid params passed. A soundcloud profile url must be passed as the url query param\n"}
+	}
+
+	u, err := url.ParseRequestURI(profileUrl[0])
+	if err != nil || u.Host != "soundcloud.com" {
+		return "", &APIError{status: http.StatusBadRequest, message: "Invalid params passed. A valid soundcloud profile url must be passed as the url query param\n"}
+	}
+
+	return profileUrl[0], nil
+}
+
+func likesHandler(w http.ResponseWriter, r *http.Request) {
+	profileUrl, err := validateParams(r)
+	if err != nil {
+		JSONError(w, err)
 		return
 	}
 
 	// TODO: handle errs
 	clientId, err := getClientId()
 	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Something went wrong\n"))
+		JSONError(w, err)
+		return
 	}
 
-	userId, err := getUserId(profileUrl[0], clientId)
+	userId, err := getUserId(profileUrl, clientId)
 	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Something went wrong\n"))
+		JSONError(w, err)
+		return
 	}
 
 	likes, err := getUserLikes(userId, clientId)
 	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Something went wrong\n"))
+		JSONError(w, err)
+		return
 	}
 
 	jsonLikes, err := json.Marshal(likes)
 	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Something went wrong\n"))
+		JSONError(w, err)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
