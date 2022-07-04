@@ -22,21 +22,21 @@
       <!-- All content should go in here -->
       <v-col cols=12 md=8>
         <v-form
-          ref="urlForm"
+          ref="form"
           @submit="handleSubmit"
         >
           <div class="d-flex align-baseline flex-wrap">
             <!-- need the enter event so we blur event to trigger validation before we submit -->
             <v-text-field
               v-model="userInput"
-              ref="urlText"
+              ref="formText"
               validate-on-blur
               :rules="rules"
               class="xs3 mr-5"
               style="flex-basis: 85%"
-              label="Enter your Soundcloud user profile URL (ex: https://soundcloud.com/test-user-25)"
+              label="Enter your Soundcloud username from your user profile url (ex: test-user-25)"
               color="info"
-              @keyup.native.enter="$refs.urlText.blur()"
+              @keyup.native.enter="$refs.formText.blur()"
             />
             <v-btn
               color="primary"
@@ -99,8 +99,8 @@ export default {
       isLoading: false,
       likes: [],
       rules: [
-        v => !!v || 'You must enter a URL',
-        v => !!v && this.isValidUrl(v) || 'The entered URL is not valid'
+        v => !!v || 'You must enter a username',
+        v => !!v && this.isValidUsername(v) || 'The entered username is not valid'
       ],
       userInput: '',
     };
@@ -138,30 +138,20 @@ export default {
       }
     },
     handleSubmit() {
-      const isValid = this.$refs.urlForm.validate();
+      const isValid = this.$refs.form.validate();
       if (isValid) {
-        // validatoion sucks so also do it by hand
-        let formattedUrl;
-        try {
-          formattedUrl = new URL(this.userInput.trim()) 
-        } catch (error) {
-          this.hasError = true;
-          this.errorText = 'A valid Soundcloud URL must be submitted'
-        }
+        const url = `https://soundcloud.com/${this.userInput.trim()}`
 
-        this.getLikes(formattedUrl.href)
-        this.$refs.urlForm.reset();
+        this.getLikes(url)
+        this.$refs.form.reset();
       }
     },
-    isValidUrl(url) {
-      try {
-        new URL(url) 
-      } catch (error) {
-        return false 
-      }
+    isValidUsername(username) {
+      // matches all alphanumeric, underscore, and hypen. I think that should cover all usernames?
+      const regex = /^[\w-]+$/;
 
-      return true;
-    }
+      return regex.test(username);
+    },
   },
   computed: {
     showNext() {
