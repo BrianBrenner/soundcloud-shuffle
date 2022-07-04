@@ -42,7 +42,6 @@ func likesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: handle errs
 	clientId, err := getClientId()
 	if err != nil {
 		JSONError(w, err)

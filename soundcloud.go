@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -27,10 +27,17 @@ type User struct {
 
 var client = &http.Client{Timeout: 15 * time.Second}
 
-// TODO: handle errors like 401, 404, etc, do you have to check response code? or is non-200 auto error
-// https://stackoverflow.com/questions/55210301/error-handling-with-http-newrequest-in-go
 func getRequest(url string) (resp *http.Response, err error) {
-	return client.Get(url)
+	res, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	if res.StatusCode != 200 {
+		return nil, errors.New("Non-200 in getRequest")
+	}
+
+	return res, nil
 }
 
 func likesRequest(url string) ([]string, string, error) {
@@ -98,9 +105,12 @@ func getClientId() (string, error) {
 		return "", err
 	}
 
-	// TODO: handle empty matches
 	idRegex := regexp.MustCompile(`,client_id:"(.*?)"`)
 	idVal := idRegex.FindStringSubmatch(string(idBody))
+
+	if idVal == nil || len(idVal) < 2 {
+		return "", errors.New("Unable to find client_id in regex")
+	}
 
 	return idVal[1], nil
 }
@@ -160,7 +170,6 @@ func getUserLikes(userId string, clientId string) ([]string, error) {
 	rand.Seed(time.Now().UTC().UnixNano())
 	perm := rand.Perm(len(finalUrls))
 
-	fmt.Println(len(finalUrls))
 	for i, v := range perm {
 		shuffled[v] = finalUrls[i]
 	}
