@@ -62,6 +62,23 @@
       <v-col cols=0 md=2></v-col>
     </v-row>
 
+    <v-snackbar
+      v-model="hasError"
+      :timeout="3000"
+      color="#d9534f"
+    >
+        {{ errorText || "Something went wrong" }}
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="hasError = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -77,6 +94,8 @@ export default {
     return {
       currentIndex: 0,
       currentSong: null,
+      errorText: '',
+      hasError: false,
       isLoading: false,
       likes: [],
       rules: [
@@ -99,13 +118,21 @@ export default {
       try {
         this.isLoading = true;
         const res = await fetch('api/likes?' + new URLSearchParams({ url })) 
+        if (!res.ok) {
+          const err = await res.json()
+
+          this.hasError = true;
+          this.errorText = err;
+          return 
+        }
+
         this.likes = await res.json()
 
         this.currentIndex = 0
         this.currentSong = this.likes[this.currentIndex]
       } catch (error) {
-        // TODO: handle errors
-        console.log(error)
+        this.hasError = true;
+        this.errorText = 'Something went wrong'
       } finally {
         this.isLoading = false;
       }
@@ -118,7 +145,8 @@ export default {
         try {
           formattedUrl = new URL(this.userInput.trim()) 
         } catch (error) {
-          // TODO: handle error
+          this.hasError = true;
+          this.errorText = 'A valid Soundcloud URL must be submitted'
         }
 
         this.getLikes(formattedUrl.href)
