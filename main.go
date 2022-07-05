@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -16,7 +17,7 @@ func router(w http.ResponseWriter, r *http.Request) {
 	case likesRoute.MatchString(r.URL.Path):
 		likesHandler(w, r)
 	default:
-		JSONError(w, ErrNotFound)
+		JSONError(w, r, ErrNotFound)
 	}
 }
 
@@ -38,39 +39,44 @@ func validateParams(r *http.Request) (string, error) {
 func likesHandler(w http.ResponseWriter, r *http.Request) {
 	profileUrl, err := validateParams(r)
 	if err != nil {
-		JSONError(w, err)
+		JSONError(w, r, err)
 		return
 	}
 
 	clientId, err := getClientId()
 	if err != nil {
-		JSONError(w, err)
+		JSONError(w, r, err)
 		return
 	}
 
 	userId, err := getUserId(profileUrl, clientId)
 	if err != nil {
-		JSONError(w, err)
+		JSONError(w, r, err)
 		return
 	}
 
 	likes, err := getUserLikes(userId, clientId)
 	if err != nil {
-		JSONError(w, err)
+		JSONError(w, r, err)
 		return
 	}
 
 	jsonLikes, err := json.Marshal(likes)
 	if err != nil {
-		JSONError(w, err)
+		JSONError(w, r, err)
 		return
 	}
+
+	// this isn't scalable, with more routes use logging middleware, but fine here
+	log.Printf("200 %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonLikes)
 }
 
 func main() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
 	fs := http.FileServer(http.Dir("./web/dist"))
 
 	http.Handle("/api/", http.HandlerFunc(router))
