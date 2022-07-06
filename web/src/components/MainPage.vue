@@ -6,11 +6,11 @@
       <v-col cols=0 md=2></v-col>
       <!-- All content should go in here -->
       <v-col cols=12 md=8>
-        <div class="mb-16 pb-4">
+        <div class="mb-16 pb-10">
           <h1 class="primary--text">Soundcloud Shuffle</h1>
           <p>
             This site shouldn't be needed, but it is {{ new Date().getFullYear() }} and Soundcloud still hasn't figured out
-            how to shuffle...
+            how to shuffle liked songs...
           </p>
         </div>
 
@@ -53,6 +53,44 @@
               </v-btn>
             </div>
           </v-form>
+
+          <v-dialog
+            v-model="showHelp"
+            width="90%"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                color="secondary"
+                small
+                class="text-capitalize white--text mt-2"
+                v-bind="attrs"
+                v-on="on"
+              >
+                Need Help?
+              </v-btn>
+            </template>
+
+            <v-card>
+              <v-card-text>
+                <v-img 
+                  src="/help.gif" 
+                  width="90%"
+                />
+              </v-card-text>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  color="primary"
+                  text
+                  @click="showHelp = false"
+                >
+                  Close
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
           <div class="mt-15">
             <div v-if="likes.length">
               <soundcloud-player 
@@ -108,8 +146,9 @@ export default {
       likes: [],
       rules: [
         v => !!v || 'You must enter a username',
-        v => !!v && this.isValidUsername(v) || 'The entered username is not valid'
+        v => !!v && this.isValidUsername(v) || 'Usernames can only contain letters, numbers, underscores, and hypens'
       ],
+      showHelp: false,
       userInput: '',
     };
   },
