@@ -1,63 +1,71 @@
 <template>
-  <v-container fluid mt-5 fill-height>
-    <v-row
-      v-if="isLoading"
-      class="d-flex justify-center"
-      key="loading"
-    >
-      <v-progress-circular
-        indeterminate
-        color="rgb(204, 68, 0)"
-        size="40"
-      />
-    </v-row>
-
-    <v-row
-      v-else
-      key="content"
-    >
+  <v-container fluid mt-5 >
+    <v-row>
       <!-- Use two empty columns on each side as dynamic gutters, I want gutters on a big
         screen but not on a small one -->
       <v-col cols=0 md=2></v-col>
       <!-- All content should go in here -->
       <v-col cols=12 md=8>
-        <v-form
-          ref="form"
-          @submit="handleSubmit"
+        <div class="mb-16 pb-4">
+          <h1 class="primary--text">Soundcloud Shuffle</h1>
+          <p>
+            This site shouldn't be needed, but it is {{ new Date().getFullYear() }} and Soundcloud still hasn't figured out
+            how to shuffle...
+          </p>
+        </div>
+
+        <v-row
+          v-if="isLoading"
+          class="d-flex justify-center"
+          key="loading"
         >
-          <div class="d-flex align-baseline flex-wrap">
-            <!-- need the enter event so we blur event to trigger validation before we submit -->
-            <v-text-field
-              v-model="userInput"
-              ref="formText"
-              validate-on-blur
-              :rules="rules"
-              class="xs3 mr-5"
-              style="flex-basis: 85%"
-              label="Enter your Soundcloud username from your user profile url (ex: test-user-25)"
-              color="info"
-              @keyup.native.enter="$refs.formText.blur()"
-            />
-            <v-btn
-              color="primary"
-              class="text-capitalize white--text xs3"
-              type="submit"
-            >
-              Shuffle Songs
-            </v-btn>
-          </div>
-        </v-form>
-        <div class="mt-15">
-          <div v-if="likes.length">
-            <soundcloud-player 
-              :show-next="showNext"
-              :show-previous="showPrevious"
-              :url="songUrl"
-              @next="handleNextSong"
-              @previous="handlePreviousSong"
-            />
+          <v-progress-circular
+            indeterminate
+            color="rgb(204, 68, 0)"
+            size="40"
+          />
+        </v-row>
+
+        <div v-else>
+          <v-form
+            ref="form"
+            @submit="handleSubmit"
+          >
+            <div class="d-flex align-baseline flex-wrap">
+              <!-- need the enter event so we blur event to trigger validation before we submit -->
+              <v-text-field
+                v-model="userInput"
+                ref="formText"
+                validate-on-blur
+                :rules="rules"
+                class="xs3 mr-5"
+                style="flex-basis: 85%"
+                label="Enter your Soundcloud username from your user profile url (ex: test-user-25)"
+                color="info"
+                @keyup.native.enter="$refs.formText.blur()"
+              />
+              <v-btn
+                color="primary"
+                class="text-capitalize white--text xs3"
+                type="submit"
+              >
+                Shuffle Songs
+              </v-btn>
+            </div>
+          </v-form>
+          <div class="mt-15">
+            <div v-if="likes.length">
+              <soundcloud-player 
+                :show-next="showNext"
+                :show-previous="showPrevious"
+                :url="songUrl"
+                @next="handleNextSong"
+                @previous="handlePreviousSong"
+              />
+            </div>
           </div>
         </div>
+
       </v-col>
       <v-col cols=0 md=2></v-col>
     </v-row>
