@@ -82,6 +82,35 @@ func parseForUrl(res *http.Response) (string, error) {
 	return urls[len(urls)-1], nil
 }
 
+func validateClientId(clientId string) (bool, error) {
+	if clientId == "" {
+		return false, nil
+	}
+
+	params := url.Values{
+		"client_id": []string{clientId},
+		// this is my profile so I know it is a valid URL
+		"url": []string{"https://soundcloud.com/brian-brenner-4"},
+	}
+
+	// there might be a request that is faster to check, but this works
+	res, err := client.Get("https://api-v2.soundcloud.com/resolve?" + params.Encode())
+	if err != nil {
+		return false, err
+	}
+
+	if res.StatusCode == 200 {
+		return true, nil
+	}
+
+	// 401 means clientId is invalid
+	if res.StatusCode == 401 {
+		return false, nil
+	}
+
+	return false, errors.New("Recieved " + strconv.Itoa(res.StatusCode) + " in validateClientId")
+}
+
 func getClientId() (string, error) {
 	res, err := getRequest("https://soundcloud.com/")
 	if err != nil {

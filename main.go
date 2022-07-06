@@ -8,7 +8,8 @@ import (
 	"regexp"
 )
 
-// TODO: store clientId, before doing anything check if valid, if not then fetch one
+// Store a clientId so we don't have to fetch it every time
+var clientId = ""
 
 var likesRoute = regexp.MustCompile(`/api/likes$`)
 
@@ -43,10 +44,21 @@ func likesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clientId, err := getClientId()
+	clientIdIsValid, err := validateClientId(clientId)
 	if err != nil {
 		JSONError(w, r, err)
 		return
+	}
+
+	if !clientIdIsValid {
+		// we assume this ID will valid so we don't have to call validateClientId again
+		localId, err := getClientId()
+		if err != nil {
+			JSONError(w, r, err)
+			return
+		}
+
+		clientId = localId
 	}
 
 	userId, err := getUserId(profileUrl, clientId)
