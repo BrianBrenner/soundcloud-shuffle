@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -112,6 +113,7 @@ func validateClientId(clientId string) (bool, error) {
 }
 
 func getClientId() (string, error) {
+	log.Println("Fetching client-id")
 	res, err := getRequest("https://soundcloud.com/")
 	if err != nil {
 		return "", err
@@ -174,7 +176,7 @@ func getUserLikes(userId string, clientId string) ([]string, error) {
 	params := url.Values{
 		// this seems to have no limit, but don't want soundcloud to block me or anything
 		// 200 is the limit on apiv1
-		"limit":     []string{"200"},
+		"limit":     []string{"10000"},
 		"client_id": []string{clientId},
 	}
 

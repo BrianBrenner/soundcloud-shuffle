@@ -94,7 +94,7 @@ func main() {
 	http.Handle("/api/", http.HandlerFunc(router))
 	http.Handle("/", fs)
 
-	err := http.ListenAndServe("localhost:3000", nil)
+	err := http.ListenAndServe(":3000", nil)
 	if err != nil {
 		panic(err)
 	}
