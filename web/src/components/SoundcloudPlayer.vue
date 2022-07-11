@@ -85,6 +85,7 @@ export default {
         // or next is clicked, a new iframe is loaded and all the events that are binded are unbinded. widget.load
         // keeps the events binded
         this.widget.load(this.url, { auto_play: true })
+          .then(() => this.setVolume());
       }
     },
     volume() {
