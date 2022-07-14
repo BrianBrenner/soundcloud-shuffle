@@ -110,8 +110,9 @@
 
     <v-snackbar
       v-model="hasError"
-      :timeout="3000"
+      :timeout="5000"
       color="#d9534f"
+      top
     >
         {{ errorText || "Something went wrong" }}
       <template v-slot:action="{ attrs }">

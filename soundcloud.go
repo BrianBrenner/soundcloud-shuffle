@@ -152,12 +152,21 @@ func getUserId(profileUrl string, clientId string) (string, error) {
 		"url":       []string{profileUrl},
 	}
 
-	res, err := getRequest("https://api-v2.soundcloud.com/resolve?" + params.Encode())
+	res, err := client.Get("https://api-v2.soundcloud.com/resolve?" + params.Encode())
 	if err != nil {
 		return "", err
 	}
-	defer res.Body.Close()
 
+	// invalid user name
+	if res.StatusCode == 404 {
+		return "", &APIError{status: http.StatusBadRequest, message: "No user was found with the provided username"}
+	}
+
+	if res.StatusCode != 200 {
+		return "", errors.New("Non-200 in getUserId request")
+	}
+
+	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return "", err
