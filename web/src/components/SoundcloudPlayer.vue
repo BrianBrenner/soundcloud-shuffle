@@ -2,8 +2,9 @@
   <div>
     <iframe
       :src="urlWithOptions"
-      width="100%" 
+      width="100%"
       allow="autoplay"
+      title="soundcloud-player"
     >
     </iframe>
     <v-row
@@ -59,7 +60,7 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import _ from 'lodash';
 import Widget from 'soundcloud-widget';
 
 export default {
@@ -81,15 +82,16 @@ export default {
   watch: {
     url() {
       if (this.widget) {
-        // Just changing the src in the iframe isn't enough, we need to call this, otherwise after the first song finishes
-        // or next is clicked, a new iframe is loaded and all the events that are binded are unbinded. widget.load
+        // Just changing the src in the iframe isn't enough, we need to call this,
+        // otherwise after the first song finishes or next is clicked, a new iframe
+        // is loaded and all the events that are binded are unbinded. widget.load
         // keeps the events binded
         this.widget.load(this.url, { auto_play: true })
           .then(() => this.setVolume());
       }
     },
     volume() {
-      this.volumeDebounced()
+      this.volumeDebounced();
     },
   },
   data() {
@@ -119,5 +121,5 @@ export default {
       return `${this.url}&amp;auto_play=true`;
     },
   },
-}
+};
 </script>

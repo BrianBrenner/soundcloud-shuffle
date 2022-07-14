@@ -9,8 +9,8 @@
         <div class="mb-16 pb-10">
           <h1 class="primary--text">Soundcloud Shuffle</h1>
           <p>
-            This site shouldn't be needed, but it is {{ new Date().getFullYear() }} and Soundcloud still hasn't figured out
-            how to shuffle liked songs...
+            This site shouldn't be needed, but it is {{ new Date().getFullYear() }}
+            and Soundcloud still hasn't figured out how to shuffle liked songs...
           </p>
         </div>
 
@@ -72,8 +72,8 @@
 
             <v-card>
               <v-card-text>
-                <v-img 
-                  src="/help.gif" 
+                <v-img
+                  src="/help.gif"
                   width="90%"
                 />
               </v-card-text>
@@ -93,7 +93,7 @@
 
           <div class="mt-15">
             <div v-if="likes.length">
-              <soundcloud-player 
+              <soundcloud-player
                 :show-next="showNext"
                 :show-previous="showPrevious"
                 :url="songUrl"
@@ -130,7 +130,7 @@
 </template>
 
 <script>
-import SoundcloudPlayer from './SoundcloudPlayer';
+import SoundcloudPlayer from './SoundcloudPlayer.vue';
 
 export default {
   name: 'MainPage',
@@ -146,8 +146,8 @@ export default {
       isLoading: false,
       likes: [],
       rules: [
-        v => !!v || 'You must enter a username',
-        v => !!v && this.isValidUsername(v) || 'Usernames can only contain letters, numbers, underscores, and hypens'
+        (v) => !!v || 'You must enter a username',
+        (v) => (!!v && this.isValidUsername(v)) || 'Usernames can only contain letters, numbers, underscores, and hypens',
       ],
       showHelp: false,
       userInput: '',
@@ -165,22 +165,22 @@ export default {
     async getLikes(url) {
       try {
         this.isLoading = true;
-        const res = await fetch('api/likes?' + new URLSearchParams({ url })) 
+        const res = await fetch(`api/likes?${new URLSearchParams({ url })}`);
         if (!res.ok) {
-          const err = await res.json()
+          const err = await res.json();
 
           this.hasError = true;
           this.errorText = err;
-          return 
+          return;
         }
 
-        this.likes = await res.json()
+        this.likes = await res.json();
 
-        this.currentIndex = 0
-        this.currentSong = this.likes[this.currentIndex]
+        this.currentIndex = 0;
+        this.currentSong = this.likes[this.currentIndex];
       } catch (error) {
         this.hasError = true;
-        this.errorText = 'Something went wrong'
+        this.errorText = 'Something went wrong';
       } finally {
         this.isLoading = false;
       }
@@ -188,9 +188,9 @@ export default {
     handleSubmit() {
       const isValid = this.$refs.form.validate();
       if (isValid) {
-        const url = `https://soundcloud.com/${this.userInput.trim()}`
+        const url = `https://soundcloud.com/${this.userInput.trim()}`;
 
-        this.getLikes(url)
+        this.getLikes(url);
         this.$refs.form.reset();
       }
     },
@@ -203,15 +203,15 @@ export default {
   },
   computed: {
     showNext() {
-      return this.currentIndex !== this.likes.length - 1
+      return this.currentIndex !== this.likes.length - 1;
     },
     showPrevious() {
       // don't want user to go below 0 for the index
-      return this.currentIndex !== 0
+      return this.currentIndex !== 0;
     },
     songUrl() {
-      return `https://w.soundcloud.com/player/?url=${this.currentSong}`
-    }
-  }
-}
+      return `https://w.soundcloud.com/player/?url=${this.currentSong}`;
+    },
+  },
+};
 </script>
