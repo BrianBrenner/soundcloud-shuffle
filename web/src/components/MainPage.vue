@@ -9,8 +9,9 @@
         <div class="mb-16 pb-10">
           <h1 class="primary--text">Soundcloud Shuffle</h1>
           <p>
-            This site shouldn't be needed, but it is {{ new Date().getFullYear() }}
-            and Soundcloud still hasn't figured out how to shuffle liked songs...
+            For those not aware, Soundcloud's desktop site does not properly shuffle
+            all your liked songs; only the first few songs get shuffled. Enter the username
+            from your user profile URL below to shuffle your entire library.
           </p>
         </div>
 
@@ -40,7 +41,7 @@
                 :rules="rules"
                 class="xs3 mr-5"
                 style="flex-basis: 85%"
-                label="Enter your Soundcloud username from your user profile url (ex: test-user-25)"
+                label="Enter your Soundcloud username from your user profile URL (ex: test-user-25)"
                 color="info"
                 @keyup.native.enter="$refs.formText.blur()"
               />

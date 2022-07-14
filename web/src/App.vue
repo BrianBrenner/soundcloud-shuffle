@@ -3,6 +3,19 @@
     <v-main>
       <MainPage/>
     </v-main>
+    <v-footer>
+      <v-row class="d-flex justify-center pb-8">
+        <a
+          href="https://github.com/DoubleB123/soundcloud-shuffle"
+          target="_blank"
+          style="text-decoration: none;"
+        >
+          <v-icon large>
+            mdi-github
+          </v-icon>
+        </a>
+      </v-row>
+    </v-footer>
   </v-app>
 </template>
 
