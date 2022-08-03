@@ -30,7 +30,7 @@
         <div v-else>
           <v-form
             ref="form"
-            @submit="handleSubmit"
+            @submit.prevent="handleSubmit"
           >
             <div class="d-flex align-baseline flex-wrap">
               <!-- need the enter event so we blur event to trigger validation before we submit -->
